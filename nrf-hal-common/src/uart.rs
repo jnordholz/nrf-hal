@@ -10,7 +10,7 @@ use crate::gpio::{Floating, Input, Output, Pin, PushPull};
 use crate::pac::{uart0, UART0};
 
 // Re-export SVD variants to allow user to directly set values.
-pub use uart0::{baudrate::BAUDRATE_A as Baudrate, config::PARITY_A as Parity};
+pub use uart0::{baudrate::BAUDRATE_A as Baudrate, config::PARITY_A as Parity, config::STOP_A as Stopbits};
 
 /// Interface to a UART instance.
 pub struct Uart<T>(T);
@@ -22,7 +22,7 @@ impl<T> Uart<T>
 where
     T: Instance,
 {
-    pub fn new(uart: T, pins: Pins, parity: Parity, baudrate: Baudrate) -> Self {
+    pub fn new(uart: T, pins: Pins, parity: Parity, baudrate: Baudrate, stopbits: Stopbits) -> Self {
         // Fill register with dummy data to trigger txd event.
         uart.txd.write(|w| unsafe { w.bits(0) });
 
@@ -57,7 +57,9 @@ where
         // Set parity.
         let hardware_flow_control = pins.rts.is_some() && pins.cts.is_some();
         uart.config
-            .write(|w| w.hwfc().bit(hardware_flow_control).parity().variant(parity));
+            .write(|w| w.hwfc().bit(hardware_flow_control)
+			.parity().variant(parity)
+			.stop().variant(stopbits));
 
         // Enable UART function.
         uart.enable.write(|w| w.enable().enabled());
