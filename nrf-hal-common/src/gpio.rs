@@ -290,6 +290,12 @@ impl<MODE> InputPin for Pin<Input<MODE>> {
     }
 }
 
+impl<MODE> Pin<Output<MODE>> {
+    pub fn set_drive(&mut self, drive: crate::pac::p0::pin_cnf::DRIVE_A) {
+        self.conf().write(|w| w.drive().variant(drive));
+    }
+}
+
 impl<MODE> OutputPin for Pin<Output<MODE>> {
     type Error = Void;
 
